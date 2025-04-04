@@ -13,6 +13,7 @@ export const notesRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      const { userId } = ctx;
       return await ctx.db.note.create({
         data: {
           title: input.title,
@@ -20,13 +21,14 @@ export const notesRouter = createTRPCRouter({
           summary: input.summary,
           tags: input.tags ?? [],
           sourceUrl: input.sourceUrl,
-          userId: ctx.session.user.id,
+          userId,
         },
       });
     }),
   getAll: protectedProcedure.query(async ({ ctx }) => {
+    const { userId } = ctx;
     return ctx.db.note.findMany({
-      where: { userId: ctx.session.user.id },
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
   }),

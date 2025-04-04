@@ -7,7 +7,7 @@ import "./src/env.js";
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
-
+  transpilePackages: ["@clerk/nextjs"],
   /**
    * If you are using `appDir` then you must comment the below `i18n` config out.
    *

@@ -1,5 +1,6 @@
 import { type Session } from "next-auth";
 import { SessionProvider } from "next-auth/react";
+import { ClerkProvider } from "@clerk/nextjs";
 import { type AppType } from "next/app";
 import { Geist } from "next/font/google";
 
@@ -17,9 +18,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <div className={geist.className}>
-        <Component {...pageProps} />
-      </div>
+      <ClerkProvider>
+        <div className={geist.className}>
+          <Component {...pageProps} />
+        </div>
+      </ClerkProvider>
     </SessionProvider>
   );
 };

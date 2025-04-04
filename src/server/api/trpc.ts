@@ -8,11 +8,12 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
-import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
+import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 
+import { getAuth } from "../auth/clerk-auth";
 import { auth } from "~/server/auth";
 import { db } from "~/server/db";
 
@@ -25,7 +26,8 @@ import { db } from "~/server/db";
  */
 
 interface CreateContextOptions {
-  session: Session | null;
+  session: Session | null; //next-auth session
+  userId: string | null; //clerk session
 }
 
 /**
@@ -41,6 +43,7 @@ interface CreateContextOptions {
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
+    userId: opts.userId,
     db,
   };
 };
@@ -53,12 +56,13 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
  */
 export const createTRPCContext = async (opts: CreateNextContextOptions) => {
   const { req, res } = opts;
-
+  const { userId } = await getAuth();
   // Get the session from the server using the getServerSession wrapper function
   const session = await auth(req, res);
 
   return createInnerTRPCContext({
     session,
+    userId,
   });
 };
 
@@ -148,11 +152,12 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.session?.user) {
+    if (!ctx.userId || !ctx.session) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
       ctx: {
+        userId: ctx.userId,
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
       },
