@@ -1,76 +1,91 @@
-import Link from 'next/link';
+import Link from "next/link";
+import { Header } from "../components/Header";
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 text-center">
-        <h1 className="text-5xl font-bold text-gray-900 mb-6">
-          Welcome to StashMind
-        </h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-          Your intelligent knowledge management system that helps you organize, discover, and share information effortlessly.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Link 
-            href="/signup" 
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Get Started
-          </Link>
-          <Link 
-            href="/about" 
-            className="bg-white text-gray-700 px-8 py-3 rounded-lg font-semibold border border-gray-300 hover:bg-gray-50 transition-colors"
-          >
-            Learn More
-          </Link>
-        </div>
-      </section>
+    <>
+      <Header />
+      <main className="h-screen overflow-hidden">
+        {/* Hero Section with Features */}
+        <section className="hero-background relative h-[85vh] px-4 pt-20">
+          <div className="flex h-full flex-col items-center justify-between py-12">
+            {/* Hero Content */}
+            <div className="hero-content max-w-4xl text-center">
+              <h1 className="mb-6 text-5xl leading-tight font-bold text-white md:text-6xl">
+                Welcome to StashMind
+              </h1>
+              <p className="mb-8 text-xl text-gray-200">
+                Your intelligent knowledge management system that helps you
+                organize, discover, and share information effortlessly.
+              </p>
+              <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+                <Link
+                  href="/signup"
+                  className="rounded-lg bg-blue-800/90 px-8 py-3 font-semibold text-white transition hover:bg-blue-700"
+                >
+                  Get Started
+                </Link>
+                <Link
+                  href="/about"
+                  className="bg-opacity-50 rounded-lg bg-violet-900/90 px-8 py-3 font-semibold text-white transition hover:bg-violet-800"
+                >
+                  Learn More
+                </Link>
+              </div>
+            </div>
 
-      {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center text-gray-900 mb-12">
-          Powerful Features
-        </h2>
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-xl font-semibold mb-3">Smart Organization</h3>
-            <p className="text-gray-600">
-              Automatically categorize and tag your content for easy retrieval.
-            </p>
+            {/* Features Grid */}
+            <div className="w-full max-w-6xl px-4">
+              <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
+                  <h3 className="mb-4 text-xl font-semibold text-white">
+                    Smart Organization
+                  </h3>
+                  <p className="text-blue-100">
+                    Automatically categorize and tag your content for easy
+                    retrieval
+                  </p>
+                </div>
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
+                  <h3 className="mb-4 text-xl font-semibold text-white">
+                    AI-Powered Search
+                  </h3>
+                  <p className="text-blue-100">
+                    Find what you need faster with our intelligent search
+                    capabilities
+                  </p>
+                </div>
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
+                  <h3 className="mb-4 text-xl font-semibold text-white">
+                    Collaboration
+                  </h3>
+                  <p className="text-blue-100">
+                    Share and work together with your team seamlessly
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-xl font-semibold mb-3">AI-Powered Search</h3>
-            <p className="text-gray-600">
-              Find exactly what you need with our intelligent search capabilities.
-            </p>
-          </div>
-          <div className="bg-white p-6 rounded-xl shadow-sm">
-            <h3 className="text-xl font-semibold mb-3">Collaboration</h3>
-            <p className="text-gray-600">
-              Share and work together with your team seamlessly.
-            </p>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* CTA Section */}
-      <section className="bg-blue-600 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-6">
-            Ready to Transform Your Knowledge Management?
-          </h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already experiencing the power of StashMind.
-          </p>
-          <Link 
-            href="/signup" 
-            className="bg-white text-blue-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
-          >
-            Start Your Free Trial
-          </Link>
-        </div>
-      </section>
-    </main>
+        {/* CTA Section */}
+        <section className="relative h-[15vh] bg-slate-900 backdrop-blur-md">
+          <div className="bg-slate-00 absolute inset-0 backdrop-blur-md"></div>
+          <div className="relative flex h-full items-center justify-center">
+            <div className="mx-auto max-w-4xl px-4 text-center">
+              <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">
+                Ready to Transform Your Knowledge Management
+              </h2>
+              <Link
+                href="/signup"
+                className="glow-button inline-block rounded-lg bg-blue-800/90 px-8 py-3 font-semibold text-white transition hover:bg-blue-600"
+              >
+                Start Your Free Trial
+              </Link>
+            </div>
+          </div>
+        </section>
+      </main>
+    </>
   );
-} 
+}
