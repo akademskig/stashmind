@@ -74,22 +74,155 @@ model VerificationToken {
 }
 
 model ClerkUser {
-  id       String   @id @default(cuid())
-  email    String   @unique
-  notes    Note[]
-  createdAt DateTime @default(now())
+  id            String    @id
+  email         String    @unique
+  name          String?
+  imageUrl      String?
+  workspaces    WorkspaceMember[]
+  ownedWorkspaces Workspace[]
+  notes         Note[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Workspace {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  type        WorkspaceType
+  owner       ClerkUser @relation(fields: [ownerId], references: [id])
+  ownerId     String
+  members     WorkspaceMember[]
+  notes       Note[]
+  tags        Tag[]
+  categories  Category[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([ownerId])
+}
+
+enum WorkspaceType {
+  PERSONAL
+  TEAM
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  user        ClerkUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  role        MemberRole
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
 }
 
 model Note {
-  id          String   @id @default(cuid())
-  userId      String
-  title       String
-  content     String
-  summary     String?
-  tags        String[]
-  sourceUrl   String?
-  relatedNoteIds String[]
-  createdAt   DateTime @default(now())
+  id              String    @id @default(cuid())
+  title           String
+  content         String    @db.Text
+  contentType     ContentType @default(MARKDOWN)
+  summary         String?   @db.Text
+  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId     String
+  author          ClerkUser @relation(fields: [authorId], references: [id])
+  authorId        String
+  tags            TagsOnNotes[]
+  category        Category? @relation(fields: [categoryId], references: [id])
+  categoryId      String?
+  aiMetadata      AINoteMetadata?
+  sourceUrl       String?
+  status          NoteStatus @default(DRAFT)
+  isArchived      Boolean   @default(false)
+  version         Int       @default(1)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  user        ClerkUser     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([workspaceId])
+  @@index([authorId])
+  @@index([categoryId])
+}
+
+enum ContentType {
+  MARKDOWN
+  RICH_TEXT
+  CODE
+  CANVAS
+}
+
+enum NoteStatus {
+  DRAFT
+  PUBLISHED
+  REVIEW
+}
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  notes       Note[]
+  parentId    String?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryHierarchy")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+  @@index([parentId])
+}
+
+model Tag {
+  id          String    @id @default(cuid())
+  name        String
+  color       String?
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId String
+  notes       TagsOnNotes[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([workspaceId, name])
+  @@index([workspaceId])
+}
+
+model TagsOnNotes {
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId    String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+  createdAt DateTime @default(now())
+
+  @@id([noteId, tagId])
+  @@index([noteId])
+  @@index([tagId])
+}
+
+model AINoteMetadata {
+  id              String    @id @default(cuid())
+  note            Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId          String    @unique
+  summary         String?   @db.Text
+  keyPoints       String[]
+  suggestedTags   String[]
+  sentiment       Float?
+  topics          String[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([noteId])
 }

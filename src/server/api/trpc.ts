@@ -27,7 +27,7 @@ import { db } from "~/server/db";
 
 interface CreateContextOptions {
   session: Session | null; //next-auth session
-  userId: string | null; //clerk session
+  auth: { userId: string | null }; //clerk session
 }
 
 /**
@@ -43,7 +43,7 @@ interface CreateContextOptions {
 const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
     session: opts.session,
-    userId: opts.userId,
+    auth: opts.auth,
     db,
   };
 };
@@ -62,7 +62,7 @@ export const createTRPCContext = async (opts: CreateNextContextOptions) => {
 
   return createInnerTRPCContext({
     session,
-    userId,
+    auth: { userId },
   });
 };
 
@@ -152,12 +152,12 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
 export const protectedProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {
-    if (!ctx.userId || !ctx.session) {
+    if (!ctx.auth.userId || !ctx.session) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
     return next({
       ctx: {
-        userId: ctx.userId,
+        auth: { ...ctx.auth, userId: ctx.auth.userId },
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
       },
