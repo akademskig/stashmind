@@ -1,4 +1,5 @@
 import { ClerkProvider } from "@clerk/nextjs";
+import { TRPCReactProvider } from "~/trpc/provider";
 import "./globals.css";
 import { Inter } from "next/font/google";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
         <link rel="preload" as="image" href="/stashmind-bg-main.png" />
       </head>
       <body className={inter.className}>
-        <ClerkProvider>{children}</ClerkProvider>
+        <ClerkProvider>
+          <TRPCReactProvider>{children}</TRPCReactProvider>
+        </ClerkProvider>
       </body>
     </html>
   );

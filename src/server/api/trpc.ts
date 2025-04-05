@@ -8,13 +8,10 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
-import type { CreateNextContextOptions } from "@trpc/server/adapters/next";
 import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
-
-import { getAuth } from "../auth/clerk-auth";
-import { auth } from "~/server/auth";
+import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 
 /**
@@ -30,23 +27,7 @@ interface CreateContextOptions {
   auth: { userId: string | null }; //clerk session
 }
 
-/**
- * This helper generates the "internals" for a tRPC context. If you need to use it, you can export
- * it from here.
- *
- * Examples of things you may need it for:
- * - testing, so we don't have to mock Next.js' req/res
- * - tRPC's `createSSGHelpers`, where we don't have req/res
- *
- * @see https://create.t3.gg/en/usage/trpc#-serverapitrpcts
- */
-const createInnerTRPCContext = (opts: CreateContextOptions) => {
-  return {
-    session: opts.session,
-    auth: opts.auth,
-    db,
-  };
-};
+
 
 /**
  * This is the actual context you will use in your router. It will be used to process every request
@@ -54,16 +35,12 @@ const createInnerTRPCContext = (opts: CreateContextOptions) => {
  *
  * @see https://trpc.io/docs/context
  */
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req, res } = opts;
-  const { userId } = await getAuth();
-  // Get the session from the server using the getServerSession wrapper function
-  const session = await auth(req, res);
-
-  return createInnerTRPCContext({
-    session,
-    auth: { userId },
-  });
+export const createTRPCContext = async () => {
+  const session = await auth();
+  return {
+    db,
+    auth: { userId: session.userId },
+  };
 };
 
 /**
@@ -107,7 +84,7 @@ export const createCallerFactory = t.createCallerFactory;
  *
  * @see https://trpc.io/docs/router
  */
-export const createTRPCRouter = t.router;
+export const createTRPCRouter  = t.router;
 
 /**
  * Middleware for timing procedure execution and adding an artificial delay in development.
@@ -149,17 +126,16 @@ export const publicProcedure = t.procedure.use(timingMiddleware);
  *
  * @see https://trpc.io/docs/procedures
  */
-export const protectedProcedure = t.procedure
-  .use(timingMiddleware)
-  .use(({ ctx, next }) => {
-    if (!ctx.auth.userId || !ctx.session) {
-      throw new TRPCError({ code: "UNAUTHORIZED" });
-    }
-    return next({
-      ctx: {
-        auth: { ...ctx.auth, userId: ctx.auth.userId },
-        // infers the `session` as non-nullable
-        session: { ...ctx.session, user: ctx.session.user },
-      },
-    });
+const isAuthed = t.middleware(async ({ ctx, next }) => {
+  if (!ctx.auth.userId) {
+    throw new TRPCError({ code: "UNAUTHORIZED" });
+  }
+  return next({
+    ctx: {
+      ...ctx,
+      auth: { userId: ctx.auth.userId },
+    },
   });
+});
+
+export const protectedProcedure = t.procedure.use(isAuthed);

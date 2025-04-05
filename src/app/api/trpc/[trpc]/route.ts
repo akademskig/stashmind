@@ -1,11 +1,9 @@
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
 import { type NextRequest } from "next/server";
-import { getAuth } from "~/server/auth/clerk-auth";
-import { auth } from "~/server/auth";
 
 import { env } from "~/env";
 import { appRouter } from "~/server/api/root";
-import { createTRPCContext } from "~/server/api/trpc";
+import { auth } from "@clerk/nextjs/server";
 
 const handler = (req: NextRequest) =>
   fetchRequestHandler({
@@ -13,11 +11,9 @@ const handler = (req: NextRequest) =>
     req,
     router: appRouter,
     createContext: async () => {
-      const { userId } = await getAuth();
       const session = await auth();
       return {
-        session,
-        userId,
+        auth: { userId: session.userId },
         db: (await import("~/server/db")).db,
       };
     },
