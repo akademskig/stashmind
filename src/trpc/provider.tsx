@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
@@ -26,4 +26,4 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
       </QueryClientProvider>
     </api.Provider>
   );
-} 
+}
