@@ -6,14 +6,13 @@ const ignoredRoutes = createRouteMatcher(["/api/webhook/clerk"]);
 
 export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
-
-  // Handle public routes and ignored routes
-  if (publicRoutes(req) || ignoredRoutes(req)) {
-    return NextResponse.next();
-  }
   // Handle users who are authenticated and on the landing page
   if (userId && req.url.endsWith("/")) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+  // Handle public routes and ignored routes
+  if (publicRoutes(req) || ignoredRoutes(req)) {
+    return NextResponse.next();
   }
   // Handle users who aren't authenticated and try to access a protected route
   return auth
