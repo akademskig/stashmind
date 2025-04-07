@@ -4,11 +4,21 @@ import { NextResponse } from "next/server";
 const publicRoutes = createRouteMatcher(["/", "/signin(.*)", "/signup(.*)"]);
 const ignoredRoutes = createRouteMatcher(["/api/webhook/clerk"]);
 
-export default clerkMiddleware((auth, req) => {
+export default clerkMiddleware(async (auth, req) => {
+  const { userId } = await auth();
+
+  // Handle public routes and ignored routes
   if (publicRoutes(req) || ignoredRoutes(req)) {
     return NextResponse.next();
   }
-  return auth.protect().then(() => NextResponse.next());
+  // Handle users who are authenticated and on the landing page
+  if (userId && req.url.endsWith("/")) {
+    return NextResponse.redirect(new URL("/dashboard", req.url));
+  }
+  // Handle users who aren't authenticated and try to access a protected route
+  return auth
+    .protect({ unauthenticatedUrl: new URL("/", req.url).toString() })
+    .then(() => NextResponse.next());
 });
 
 export const config = {
