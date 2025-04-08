@@ -13,7 +13,12 @@ const handler = (req: NextRequest) =>
     createContext: async () => {
       const session = await auth();
       return {
-        auth: { userId: session.userId },
+        auth: {
+          userId: session.userId,
+          email: session.sessionClaims?.email as string | undefined,
+          name: session.sessionClaims?.name as string | undefined,
+          image: session.sessionClaims?.picture as string | undefined,
+        },
         db: (await import("~/server/db")).db,
       };
     },

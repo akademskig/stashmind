@@ -8,12 +8,10 @@
  */
 
 import { initTRPC, TRPCError } from "@trpc/server";
-import { type Session } from "next-auth";
 import superjson from "superjson";
 import { ZodError } from "zod";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
-
 /**
  * 1. CONTEXT
  *
@@ -23,8 +21,12 @@ import { db } from "~/server/db";
  */
 
 interface CreateContextOptions {
-  session: Session | null; //next-auth session
-  auth: { userId: string | null }; //clerk session
+  auth: {
+    userId: string | null;
+    email?: string;
+    name?: string;
+    image?: string;
+  };
 }
 
 /**
@@ -35,9 +37,15 @@ interface CreateContextOptions {
  */
 export const createTRPCContext = async () => {
   const session = await auth();
+  const user = {
+    userId: session.userId,
+    email: session.sessionClaims?.email as string | undefined,
+    name: session.sessionClaims?.name as string | undefined,
+    image: session.sessionClaims?.image as string | undefined,
+  };
   return {
     db,
-    auth: { userId: session.userId },
+    auth: user,
   };
 };
 
@@ -131,7 +139,12 @@ const isAuthed = t.middleware(async ({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      auth: { userId: ctx.auth.userId },
+      auth: {
+        userId: ctx.auth.userId,
+        email: ctx.auth.email,
+        name: ctx.auth.name,
+        image: ctx.auth.image,
+      },
     },
   });
 });
