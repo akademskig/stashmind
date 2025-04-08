@@ -19,7 +19,7 @@ export const workspaceRouter = createTRPCRouter({
           description: input.description,
           type: input.type,
           owner: {
-            connect: { id: ctx.auth.userId },
+            connect: { clerkId: ctx.auth.userId },
           },
           members: {
             create: {

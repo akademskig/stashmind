@@ -74,13 +74,15 @@ model VerificationToken {
 }
 
 model ClerkUser {
-  id            String    @id
+  id            String    @id @default(cuid())
+  clerkId       String    @unique
   email         String    @unique
   name          String?
   imageUrl      String?
   workspaces    WorkspaceMember[]
   ownedWorkspaces Workspace[]
   notes         Note[]
+  image         String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
@@ -90,7 +92,7 @@ model Workspace {
   name        String
   description String?
   type        WorkspaceType
-  owner       ClerkUser @relation(fields: [ownerId], references: [id])
+  owner       ClerkUser @relation(fields: [ownerId], references: [clerkId])
   ownerId     String
   members     WorkspaceMember[]
   notes       Note[]
@@ -111,7 +113,7 @@ model WorkspaceMember {
   id          String    @id @default(cuid())
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  user        ClerkUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        ClerkUser @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
   userId      String
   role        MemberRole
   createdAt   DateTime  @default(now())
