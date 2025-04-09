@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { NoteCard } from "~/components/NoteCard";
-
+import { Loader } from "~/components/ui/loader";
 export default function WorkspaceNotesPage() {
   const params = useParams();
   const id = params.workspaceId as string;
@@ -13,8 +13,8 @@ export default function WorkspaceNotesPage() {
     workspaceId: id,
   });
 
-  if (!workspace) {
-    return <div>Loading...</div>;
+  if (workspace) {
+    return <Loader fullPage size="lg" />;
   }
 
   return (

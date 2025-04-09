@@ -21,7 +21,7 @@ export function Loader({ size = "md", className, fullPage = false }: LoaderProps
       className={cn(
         "flex items-center justify-center",
         {
-          "h-screen": fullPage,
+          "min-h-[calc(100vh-8rem)]": fullPage,
           "h-64": !fullPage,
         },
         className,
