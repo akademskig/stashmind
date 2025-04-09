@@ -62,7 +62,7 @@ export default function DashboardPage() {
             View All Workspaces
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 ">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {workspaces
             ?.slice(0, 3)
             .map((workspace) => (

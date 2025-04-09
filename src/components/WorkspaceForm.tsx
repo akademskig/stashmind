@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { api } from "~/utils/api";
 import { Button } from "./ui/button";
-import { Loader2 } from "lucide-react";
+import { Loader } from "./ui/loader";
 
 interface WorkspaceFormProps {
   onSuccess?: () => void;
@@ -134,7 +134,7 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
         >
           {createWorkspace.isPending ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader size="sm" className="mr-2" />
               Creating...
             </>
           ) : (

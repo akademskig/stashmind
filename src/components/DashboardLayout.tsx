@@ -23,7 +23,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="flex items-center gap-8">
           <Button
             variant="icon"
-            className="md:hidden p-0"
+            className="p-0 md:hidden"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             {isMobileMenuOpen ? (

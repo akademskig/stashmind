@@ -7,7 +7,8 @@ import { Modal } from "~/components/Modal";
 import { WorkspaceForm } from "~/components/WorkspaceForm";
 import { Card } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
-import { Plus, Loader2 } from "lucide-react";
+import { Plus } from "lucide-react";
+import { Loader } from "~/components/ui/loader";
 
 export default function WorkspacesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,9 +36,7 @@ export default function WorkspacesPage() {
 
         {/* Workspaces grid */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
-          </div>
+          <Loader />
         ) : !workspaces?.length ? (
           <Card className="p-8 text-center">
             <h2 className="mb-2 text-xl font-semibold text-white">

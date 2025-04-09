@@ -47,7 +47,9 @@ export function Sidebar({ isMobileMenuOpen }: SidebarProps) {
   return (
     <div
       className={`fixed inset-y-0 left-0 z-50 w-16 flex-shrink-0 flex-col bg-slate-900 transition-transform md:relative md:translate-x-0 ${
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        isMobileMenuOpen
+          ? "translate-x-0"
+          : "-translate-x-full md:translate-x-0"
       }`}
     >
       <div className="flex flex-col items-center gap-4 p-4">
@@ -69,4 +71,4 @@ export function Sidebar({ isMobileMenuOpen }: SidebarProps) {
       </div>
     </div>
   );
-} 
+}
