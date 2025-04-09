@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,73 +13,60 @@ interface ModalProps {
 }
 
 export function Modal({ isOpen, onClose, title, children }: ModalProps) {
-  const [isVisible, setIsVisible] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
-      // Small delay to allow the component to mount before starting the animation
-      const timer = setTimeout(() => {
-        setIsMounted(true);
-      }, 10);
-      document.body.style.overflow = "hidden";
-      return () => clearTimeout(timer);
-    } else {
-      setIsMounted(false);
-      const timer = setTimeout(() => {
-        setIsVisible(false);
-      }, 300); // Match this with the transition duration
-      return () => clearTimeout(timer);
-    }
-  }, [isOpen]);
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+      }
     };
 
     if (isOpen) {
       document.addEventListener("keydown", handleEscape);
+      document.body.style.overflow = "hidden";
     }
 
     return () => {
       document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
+      document.body.style.overflow = "";
     };
   }, [isOpen, onClose]);
 
-  if (!isVisible) return null;
+  if (!mounted || !isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300 ease-in-out"
-        style={{ opacity: isMounted ? 1 : 0 }}
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+        onClick={onClose}
       />
 
       {/* Modal */}
-      <div
-        ref={modalRef}
-        className="relative mx-4 w-full max-w-2xl transform rounded-lg border border-gray-800 bg-gray-900 p-6 shadow-xl transition-all duration-300 ease-in-out"
-        style={{
-          opacity: isMounted ? 1 : 0,
-          transform: isMounted ? "scale(1)" : "scale(0.95)",
-        }}
-      >
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-white">{title}</h2>
-          <button
+      <div className="relative z-10 w-full max-w-md overflow-hidden rounded-lg border border-slate-700 bg-slate-900 shadow-xl transition-all">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
+          <h3 className="text-lg font-medium text-white">{title}</h3>
+          <Button
+            variant="icon"
+            className="text-slate-400 hover:text-white"
             onClick={onClose}
-            className="rounded-lg p-1 text-gray-400 transition-colors duration-200 hover:bg-gray-800 hover:text-white"
+            aria-label="Close modal"
           >
             <X className="h-5 w-5" />
-          </button>
+          </Button>
         </div>
-        {children}
+
+        {/* Content */}
+        <div className="px-4 py-4">{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

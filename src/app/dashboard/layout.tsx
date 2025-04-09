@@ -1,16 +1,10 @@
-import { DashboardHeader } from "~/components/DashboardHeader";
+import { DashboardLayout } from "~/components/DashboardLayout";
+import type { Metadata } from "next";
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex h-screen flex-col">
-      <DashboardHeader />
-      <div className="flex-1 overflow-y-auto px-4 py-8">
-        <div className="mx-auto max-w-6xl">{children}</div>
-      </div>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Dashboard | StashMind",
+};
+
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <DashboardLayout>{children}</DashboardLayout>;
 }

@@ -1,33 +1,76 @@
 "use client";
 
 import { useState } from "react";
-import { Workspaces } from "~/components/Workspaces";
+import { api } from "~/utils/api";
+import { WorkspaceCard } from "~/components/WorkspaceCard";
 import { Modal } from "~/components/Modal";
 import { WorkspaceForm } from "~/components/WorkspaceForm";
+import { Card } from "~/components/ui/card";
+import { Button } from "~/components/ui/button";
+import { Plus, Loader2 } from "lucide-react";
 
 export default function WorkspacesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const { data: workspaces, isLoading } = api.workspace.getAll.useQuery();
 
   return (
-    <div>
-      <div className="mb-8 flex items-center justify-between">
-        <h2 className="text-2xl font-semibold text-white">Your Workspaces</h2>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-        >
-          Create Workspace
-        </button>
-      </div>
-      <Workspaces />
+    <div className="bg-slate-950 p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white">Workspaces</h1>
+            <p className="mt-2 text-slate-400">
+              Organize your projects and collaborate with your team
+            </p>
+          </div>
+          <Button
+            variant="primary"
+            className="flex items-center gap-2"
+            onClick={() => setIsModalOpen(true)}
+          >
+            <Plus className="h-4 w-4" />
+            Create Workspace
+          </Button>
+        </div>
 
-      <Modal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Create New Workspace"
-      >
-        <WorkspaceForm onSuccess={() => setIsModalOpen(false)} />
-      </Modal>
+        {/* Workspaces grid */}
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-cyan-400" />
+          </div>
+        ) : !workspaces?.length ? (
+          <Card className="p-8 text-center">
+            <h2 className="mb-2 text-xl font-semibold text-white">
+              No workspaces yet
+            </h2>
+            <p className="mb-6 text-slate-400">
+              Create your first workspace to start organizing your knowledge.
+            </p>
+            <Button
+              variant="primary"
+              className="mx-auto flex items-center gap-2"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Plus className="h-4 w-4" />
+              Create Workspace
+            </Button>
+          </Card>
+        ) : (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {workspaces.map((workspace) => (
+              <WorkspaceCard key={workspace.id} workspace={workspace} />
+            ))}
+          </div>
+        )}
+
+        <Modal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          title="Create Workspace"
+        >
+          <WorkspaceForm onSuccess={() => setIsModalOpen(false)} />
+        </Modal>
+      </div>
     </div>
   );
 }

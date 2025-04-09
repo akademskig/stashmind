@@ -57,12 +57,12 @@ export default function DashboardPage() {
           </h2>
           <Link
             href="/dashboard/workspaces"
-            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+            className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-500"
           >
             View All Workspaces
           </Link>
         </div>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 ">
           {workspaces
             ?.slice(0, 3)
             .map((workspace) => (

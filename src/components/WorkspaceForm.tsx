@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { api } from "~/utils/api";
+import { Button } from "./ui/button";
 import { Loader2 } from "lucide-react";
 
 interface WorkspaceFormProps {
@@ -13,143 +14,133 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
   const [description, setDescription] = useState("");
   const [type, setType] = useState<"PERSONAL" | "TEAM">("PERSONAL");
   const [error, setError] = useState("");
-  const [formErrors, setFormErrors] = useState<{
-    name?: string;
-    type?: string;
-  }>({});
-
   const utils = api.useUtils();
-  const { mutate: createWorkspace, isPending } =
-    api.workspace.create.useMutation({
-      onSuccess: () => {
-        utils.workspace.getAll.invalidate();
-        onSuccess?.();
-      },
-      onError: (error) => {
-        setError(error.message);
-      },
-    });
-
-  const validateForm = () => {
-    const errors: { name?: string; type?: string } = {};
-
-    if (!name.trim()) {
-      errors.name = "Workspace name is required";
-    }
-
-    if (!type) {
-      errors.type = "Workspace type is required";
-    }
-
-    setFormErrors(errors);
-    return Object.keys(errors).length === 0;
-  };
+  const createWorkspace = api.workspace.create.useMutation({
+    onSuccess: () => {
+      utils.workspace.getAll.invalidate();
+      onSuccess?.();
+    },
+    onError: (error) => {
+      setError(error.message);
+    },
+  });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!validateForm()) return;
+    if (!name.trim()) {
+      setError("Workspace name is required");
+      return;
+    }
 
-    createWorkspace({ name, description, type });
+    createWorkspace.mutate({
+      name: name.trim(),
+      description: description.trim(),
+      type,
+    });
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label
           htmlFor="name"
-          className="block text-sm font-medium text-gray-400"
+          className="mb-1 block text-sm font-medium text-white"
         >
-          Workspace Name *
+          Name <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           id="name"
           value={name}
-          onChange={(e) => {
-            setName(e.target.value);
-            if (formErrors.name) {
-              setFormErrors((prev) => ({ ...prev, name: undefined }));
-            }
-          }}
-          className={`mt-1 block w-full rounded-lg border px-4 py-2 text-white backdrop-blur-sm focus:outline-none ${
-            formErrors.name
-              ? "border-red-500 bg-red-900/20"
-              : "border-gray-800 bg-gray-900/50 focus:border-indigo-500"
-          }`}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none"
+          placeholder="My Workspace"
           required
         />
-        {formErrors.name && (
-          <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>
-        )}
       </div>
 
       <div>
         <label
           htmlFor="description"
-          className="block text-sm font-medium text-gray-400"
+          className="mb-1 block text-sm font-medium text-white"
         >
-          Description
+          Description <span className="text-slate-400">(optional)</span>
         </label>
         <textarea
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
+          className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 focus:border-cyan-500 focus:outline-none"
+          placeholder="A space for my notes and ideas"
           rows={3}
-          className="mt-1 block w-full rounded-lg border border-gray-800 bg-gray-900/50 px-4 py-2 text-white backdrop-blur-sm focus:border-indigo-500 focus:outline-none"
         />
       </div>
 
       <div>
-        <label
-          htmlFor="type"
-          className="block text-sm font-medium text-gray-400"
-        >
-          Workspace Type *
-        </label>
-        <select
-          id="type"
-          value={type}
-          onChange={(e) => {
-            setType(e.target.value as "PERSONAL" | "TEAM");
-            if (formErrors.type) {
-              setFormErrors((prev) => ({ ...prev, type: undefined }));
-            }
-          }}
-          className={`mt-1 block w-full rounded-lg border px-4 py-2 text-white backdrop-blur-sm focus:outline-none ${
-            formErrors.type
-              ? "border-red-500 bg-red-900/20"
-              : "border-gray-800 bg-gray-900/50 focus:border-indigo-500"
-          }`}
-          required
-        >
-          <option value="PERSONAL">Personal</option>
-          <option value="TEAM">Team</option>
-        </select>
-        {formErrors.type && (
-          <p className="mt-1 text-sm text-red-500">{formErrors.type}</p>
-        )}
+        <span className="mb-1 block text-sm font-medium text-white">
+          Type <span className="text-red-500">*</span>
+        </span>
+        <div className="grid grid-cols-2 gap-3">
+          <label
+            className={`flex cursor-pointer items-center justify-center rounded-md border p-3 text-sm ${
+              type === "PERSONAL"
+                ? "border-cyan-500 bg-slate-800 text-white"
+                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+            }`}
+          >
+            <input
+              type="radio"
+              className="sr-only"
+              value="PERSONAL"
+              checked={type === "PERSONAL"}
+              onChange={() => setType("PERSONAL")}
+            />
+            <span>Personal</span>
+          </label>
+
+          <label
+            className={`flex cursor-pointer items-center justify-center rounded-md border p-3 text-sm ${
+              type === "TEAM"
+                ? "border-cyan-500 bg-slate-800 text-white"
+                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+            }`}
+          >
+            <input
+              type="radio"
+              className="sr-only"
+              value="TEAM"
+              checked={type === "TEAM"}
+              onChange={() => setType("TEAM")}
+            />
+            <span>Team</span>
+          </label>
+        </div>
       </div>
 
       {error && (
-        <div className="rounded-lg bg-red-900/50 p-4 text-sm text-red-200">
+        <div className="rounded-md bg-red-400/10 px-3 py-2 text-sm text-red-400">
           {error}
         </div>
       )}
 
-      <div className="flex justify-end">
-        <button
+      <div className="flex justify-end pt-2">
+        <Button
           type="submit"
-          disabled={isPending}
-          className="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-indigo-700 disabled:opacity-50"
+          variant="primary"
+          disabled={createWorkspace.isPending}
+          className="w-full sm:w-auto"
         >
-          {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+          {createWorkspace.isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating...
+            </>
           ) : (
             "Create Workspace"
           )}
-        </button>
+        </Button>
       </div>
     </form>
   );
