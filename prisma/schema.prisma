@@ -80,7 +80,7 @@ model Note {
   summary         String?   @db.Text
   workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId     String
-  author          ClerkUser @relation(fields: [authorId], references: [id])
+  author          ClerkUser @relation(fields: [authorId], references: [clerkId])
   authorId        String
   tags            TagsOnNotes[]
   category        Category? @relation(fields: [categoryId], references: [id])

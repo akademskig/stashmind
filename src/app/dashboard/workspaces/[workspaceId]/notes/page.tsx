@@ -4,7 +4,14 @@ import { useParams } from "next/navigation";
 import { api } from "~/trpc/react";
 import { NoteCard } from "~/components/NoteCard";
 import { Loader } from "~/components/ui/loader";
+import { useState } from "react";
+import { Modal } from "~/components/Modal";
+import { NoteForm } from "~/components/NoteForm";
+import { Button } from "~/components/ui/button";
+import { Plus } from "lucide-react";
+
 export default function WorkspaceNotesPage() {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const params = useParams();
   const id = params.workspaceId as string;
 
@@ -13,7 +20,7 @@ export default function WorkspaceNotesPage() {
     workspaceId: id,
   });
 
-  if (workspace) {
+  if (!workspace) {
     return <Loader fullPage size="lg" />;
   }
 
@@ -21,9 +28,14 @@ export default function WorkspaceNotesPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-white">Notes</h1>
-        <button className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700">
+        <Button
+          variant="primary"
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Plus className="h-4 w-4" />
           New Note
-        </button>
+        </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -49,6 +61,13 @@ export default function WorkspaceNotesPage() {
           ))
         )}
       </div>
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        title="Create Note"
+      >
+        <NoteForm onSuccess={() => setIsModalOpen(false)} workspaceId={id} />
+      </Modal>
     </div>
   );
 }

@@ -9,6 +9,7 @@ export const noteRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       return ctx.db.note.findMany({
         where: {
+          authorId: ctx.auth.userId,
           workspaceId: input.workspaceId,
           isArchived: false,
         },
