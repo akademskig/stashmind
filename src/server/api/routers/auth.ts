@@ -10,7 +10,7 @@ export const authRouter = createTRPCRouter({
       await ctx.db.clerkUser.create({
         data: {
           clerkId: ctx.auth.userId,
-          email: ctx.auth.email as string,
+          email: ctx.auth.email!,
           name: ctx.auth.name,
           image: ctx.auth.image,
         },

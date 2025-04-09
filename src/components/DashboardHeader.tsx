@@ -2,17 +2,10 @@
 
 import Link from "next/link";
 import { SignOutButton, useUser } from "@clerk/nextjs";
-import {
-  Home,
-  Users,
-  FileText,
-  Settings,
-  LogOut,
-  ChevronDown,
-  Search,
-} from "lucide-react";
+import { Settings, LogOut, ChevronDown, Search } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
+import Image from "next/image";
 
 export function DashboardHeader() {
   const { user } = useUser();
@@ -56,17 +49,19 @@ export function DashboardHeader() {
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             <div className="h-8 w-8 overflow-hidden rounded-full">
-              <img
+              <Image
                 src={
-                  user?.imageUrl ||
+                  user?.imageUrl ??
                   "https://ui-avatars.com/api/?name=User&background=818cf8&color=fff"
                 }
-                alt={user?.fullName || "User"}
+                alt={user?.fullName ?? "User"}
+                width={32}
+                height={32}
                 className="h-full w-full object-cover"
               />
             </div>
             <span className="text-sm font-medium">
-              {user?.fullName?.split(" ")[0] || "User"}
+              {user?.fullName?.split(" ")[0] ?? "User"}
             </span>
             <ChevronDown className="h-4 w-4" />
           </Button>

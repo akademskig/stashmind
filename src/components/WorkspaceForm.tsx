@@ -17,7 +17,7 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
   const utils = api.useUtils();
   const createWorkspace = api.workspace.create.useMutation({
     onSuccess: () => {
-      utils.workspace.getAll.invalidate();
+      void utils.workspace.getAll.invalidate();
       onSuccess?.();
     },
     onError: (error) => {

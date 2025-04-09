@@ -20,12 +20,12 @@ import { db } from "~/server/db";
  * These allow you to access things when processing a request, like the database, the session, etc.
  */
 
-interface CreateContextOptions {
+interface AuthObject {
   auth: {
     userId: string | null;
-    email?: string;
-    name?: string;
-    image?: string;
+    email: string | undefined;
+    name: string | undefined;
+    image: string | undefined;
   };
 }
 
@@ -37,7 +37,7 @@ interface CreateContextOptions {
  */
 export const createTRPCContext = async () => {
   const session = await auth();
-  const user = {
+  const user: AuthObject["auth"] = {
     userId: session.userId,
     email: session.sessionClaims?.email as string | undefined,
     name: session.sessionClaims?.name as string | undefined,

@@ -7,7 +7,7 @@ interface ToggleProps
 }
 
 const Toggle = forwardRef<HTMLInputElement, ToggleProps>(
-  ({ className, label, ...props }, ref) => {
+  ({ label, ...props }, ref) => {
     return (
       <label className="flex cursor-pointer items-center gap-2">
         <div className="relative inline-block">
