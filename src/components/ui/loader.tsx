@@ -7,7 +7,11 @@ interface LoaderProps {
   fullPage?: boolean;
 }
 
-export function Loader({ size = "md", className, fullPage = false }: LoaderProps) {
+export function Loader({
+  size = "md",
+  className,
+  fullPage = false,
+}: LoaderProps) {
   const sizeClasses = {
     sm: "h-4 w-4",
     md: "h-8 w-8",
@@ -36,4 +40,4 @@ export function Loader({ size = "md", className, fullPage = false }: LoaderProps
       />
     </Wrapper>
   );
-} 
+}
