@@ -55,7 +55,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
           <h3 className="text-lg font-medium text-white">{title}</h3>
           <Button
             variant="icon"
-            className="text-slate-400 hover:text-white p-0"
+            className="p-0 text-slate-400 hover:text-white"
             onClick={onClose}
             aria-label="Close modal"
           >
