@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { api } from "~/trpc/react";
+import { useState, useEffect } from "react";
+import { api } from "~/utils/api";
 import { Button } from "./ui/button";
 import { Loader } from "./ui/loader";
 import MDEditor from "@uiw/react-md-editor";
 import { Card } from "./ui/card";
+import { toast } from "sonner";
 
 interface NoteFormProps {
   spaceId: string;
@@ -17,29 +18,90 @@ interface NoteFormProps {
   };
 }
 
+interface DraftNote {
+  title: string;
+  content: string;
+  lastSaved: number;
+}
+
+const AUTOSAVE_DELAY = 2000; // 2 seconds
+const DRAFT_KEY_PREFIX = "note_draft_";
+
 export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [content, setContent] = useState(initialData?.content ?? "");
   const [error, setError] = useState("");
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const utils = api.useUtils();
+
+  const draftKey = `${DRAFT_KEY_PREFIX}${spaceId}${initialData?.id ?? "new"}`;
+
+  // Load draft on mount
+  useEffect(() => {
+    const savedDraft = localStorage.getItem(draftKey);
+    if (savedDraft) {
+      const draft: DraftNote = JSON.parse(savedDraft) as DraftNote;
+      const draftAge = Date.now() - draft.lastSaved;
+      const draftAgeHours = draftAge / (1000 * 60 * 60);
+
+      // Only restore drafts less than 24 hours old
+      if (draftAgeHours < 24) {
+        const shouldRestore = window.confirm(
+          "We found a saved draft. Would you like to restore it?",
+        );
+        if (shouldRestore) {
+          setTitle(draft.title);
+          setContent(draft.content);
+          setLastSaved(new Date(draft.lastSaved));
+        } else {
+          localStorage.removeItem(draftKey);
+        }
+      } else {
+        localStorage.removeItem(draftKey);
+      }
+    }
+  }, [draftKey]);
+
+  // Autosave effect
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (title.trim() || content.trim()) {
+        const draft: DraftNote = {
+          title,
+          content,
+          lastSaved: Date.now(),
+        };
+        localStorage.setItem(draftKey, JSON.stringify(draft));
+        setLastSaved(new Date());
+      }
+    }, AUTOSAVE_DELAY);
+
+    return () => clearTimeout(timer);
+  }, [title, content, draftKey]);
 
   const createNote = api.note.create.useMutation({
     onSuccess: () => {
       void utils.note.getAllBySpace.invalidate({ spaceId });
+      localStorage.removeItem(draftKey);
+      toast.success("Note created successfully");
       onSuccess?.();
     },
     onError: (error) => {
       setError(error.message);
+      toast.error("Failed to create note");
     },
   });
 
   const updateNote = api.note.update.useMutation({
     onSuccess: () => {
       void utils.note.getAllBySpace.invalidate({ spaceId });
+      localStorage.removeItem(draftKey);
+      toast.success("Note updated successfully");
       onSuccess?.();
     },
     onError: (error) => {
       setError(error.message);
+      toast.error("Failed to update note");
     },
   });
 
@@ -120,7 +182,12 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
         </div>
       )}
 
-      <div className="animate-fade-in flex justify-end pt-2 [animation-delay:200ms]">
+      <div className="animate-fade-in flex items-center justify-between pt-2 [animation-delay:200ms]">
+        <div className="text-sm text-slate-400">
+          {lastSaved && (
+            <span>Last saved {lastSaved.toLocaleTimeString()}</span>
+          )}
+        </div>
         <Button
           type="submit"
           variant="primary"

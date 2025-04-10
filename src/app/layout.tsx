@@ -5,6 +5,7 @@ import "~/styles/markdown.css";
 import "@uiw/react-md-editor/markdown-editor.css";
 import "@uiw/react-markdown-preview/markdown.css";
 import { Inter } from "next/font/google";
+import { Toaster } from "sonner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,7 +27,10 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <ClerkProvider>
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            {children}
+            <Toaster position="top-right" theme="dark" closeButton richColors />
+          </TRPCReactProvider>
         </ClerkProvider>
       </body>
     </html>
