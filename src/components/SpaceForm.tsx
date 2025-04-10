@@ -5,19 +5,22 @@ import { api } from "~/utils/api";
 import { Button } from "./ui/button";
 import { Loader } from "./ui/loader";
 
-interface WorkspaceFormProps {
+interface SpaceFormProps {
   onSuccess?: () => void;
 }
 
-export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
+export function SpaceForm({ onSuccess }: SpaceFormProps) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<"PERSONAL" | "TEAM">("PERSONAL");
+  const [purpose, setPurpose] = useState<
+    "GENERAL" | "LEARNING" | "READING" | "RESEARCH" | "JOURNAL"
+  >("GENERAL");
   const [error, setError] = useState("");
   const utils = api.useUtils();
-  const createWorkspace = api.workspace.create.useMutation({
+
+  const createKnowledgeSpace = api.space.create.useMutation({
     onSuccess: () => {
-      void utils.workspace.getAll.invalidate();
+      void utils.space.getAll.invalidate();
       onSuccess?.();
     },
     onError: (error) => {
@@ -30,16 +33,44 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
     setError("");
 
     if (!name.trim()) {
-      setError("Workspace name is required");
+      setError("Knowledge space name is required");
       return;
     }
 
-    createWorkspace.mutate({
+    createKnowledgeSpace.mutate({
       name: name.trim(),
       description: description.trim(),
-      type,
+      purpose,
     });
   };
+
+  const purposeOptions = [
+    {
+      value: "GENERAL",
+      label: "General Notes",
+      description: "For general note-taking and ideas",
+    },
+    {
+      value: "LEARNING",
+      label: "Learning",
+      description: "For courses, tutorials, and learning projects",
+    },
+    {
+      value: "READING",
+      label: "Reading",
+      description: "For book notes, articles, and papers",
+    },
+    {
+      value: "RESEARCH",
+      label: "Research",
+      description: "For research projects and deep dives",
+    },
+    {
+      value: "JOURNAL",
+      label: "Journal",
+      description: "For personal reflections and thoughts",
+    },
+  ] as const;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -56,7 +87,7 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 transition-all duration-200 focus:border-cyan-500 focus:outline-none"
-          placeholder="My Workspace"
+          placeholder="My Knowledge Space"
           required
         />
       </div>
@@ -73,49 +104,38 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 transition-all duration-200 focus:border-cyan-500 focus:outline-none"
-          placeholder="A space for my notes and ideas"
+          placeholder="A space for organizing my knowledge"
           rows={3}
         />
       </div>
 
       <div className="animate-fade-in [animation-delay:200ms]">
         <span className="mb-1 block text-sm font-medium text-white">
-          Type <span className="text-red-500">*</span>
+          Purpose <span className="text-red-500">*</span>
         </span>
-        <div className="grid grid-cols-2 gap-3">
-          <label
-            className={`flex cursor-pointer items-center justify-center rounded-md border p-3 text-sm transition-all duration-200 ${
-              type === "PERSONAL"
-                ? "border-cyan-500 bg-slate-800 text-white"
-                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
-            }`}
-          >
-            <input
-              type="radio"
-              className="sr-only"
-              value="PERSONAL"
-              checked={type === "PERSONAL"}
-              onChange={() => setType("PERSONAL")}
-            />
-            <span>Personal</span>
-          </label>
-
-          <label
-            className={`flex cursor-pointer items-center justify-center rounded-md border p-3 text-sm transition-all duration-200 ${
-              type === "TEAM"
-                ? "border-cyan-500 bg-slate-800 text-white"
-                : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
-            }`}
-          >
-            <input
-              type="radio"
-              className="sr-only"
-              value="TEAM"
-              checked={type === "TEAM"}
-              onChange={() => setType("TEAM")}
-            />
-            <span>Team</span>
-          </label>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {purposeOptions.map((option) => (
+            <label
+              key={option.value}
+              className={`flex cursor-pointer flex-col rounded-md border p-3 text-sm transition-all duration-200 ${
+                purpose === option.value
+                  ? "border-cyan-500 bg-slate-800 text-white"
+                  : "border-slate-700 bg-slate-900 text-slate-400 hover:border-slate-600"
+              }`}
+            >
+              <input
+                type="radio"
+                className="sr-only"
+                value={option.value}
+                checked={purpose === option.value}
+                onChange={() => setPurpose(option.value)}
+              />
+              <span className="font-medium">{option.label}</span>
+              <span className="mt-1 text-xs opacity-80">
+                {option.description}
+              </span>
+            </label>
+          ))}
         </div>
       </div>
 
@@ -129,16 +149,16 @@ export function WorkspaceForm({ onSuccess }: WorkspaceFormProps) {
         <Button
           type="submit"
           variant="primary"
-          disabled={createWorkspace.isPending}
+          disabled={createKnowledgeSpace.isPending}
           className="w-full transition-all duration-200 sm:w-auto"
         >
-          {createWorkspace.isPending ? (
+          {createKnowledgeSpace.isPending ? (
             <>
               <Loader size="sm" className="mr-2" />
               Creating...
             </>
           ) : (
-            "Create Workspace"
+            "Create Knowledge Space"
           )}
         </Button>
       </div>

@@ -6,7 +6,7 @@ import { Button } from "./ui/button";
 import { Loader } from "./ui/loader";
 
 interface NoteFormProps {
-  workspaceId: string;
+  spaceId: string;
   onSuccess?: () => void;
   initialData?: {
     id: string;
@@ -15,11 +15,7 @@ interface NoteFormProps {
   };
 }
 
-export function NoteForm({
-  workspaceId,
-  onSuccess,
-  initialData,
-}: NoteFormProps) {
+export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
   const [title, setTitle] = useState(initialData?.title ?? "");
   const [content, setContent] = useState(initialData?.content ?? "");
   const [error, setError] = useState("");
@@ -27,7 +23,7 @@ export function NoteForm({
 
   const createNote = api.note.create.useMutation({
     onSuccess: () => {
-      void utils.note.getAllByWorkspace.invalidate({ workspaceId });
+      void utils.note.getAllBySpace.invalidate({ spaceId });
       onSuccess?.();
     },
     onError: (error) => {
@@ -37,7 +33,7 @@ export function NoteForm({
 
   const updateNote = api.note.update.useMutation({
     onSuccess: () => {
-      void utils.note.getAllByWorkspace.invalidate({ workspaceId });
+      void utils.note.getAllBySpace.invalidate({ spaceId });
       onSuccess?.();
     },
     onError: (error) => {
@@ -62,7 +58,7 @@ export function NoteForm({
       });
     } else {
       createNote.mutate({
-        workspaceId,
+        spaceId,
         title: title.trim(),
         content: content.trim(),
         contentType: "MARKDOWN",

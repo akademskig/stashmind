@@ -1,55 +1,75 @@
 import { z } from "zod";
-import { ContentType, NoteStatus, MemberRole } from "@prisma/client";
-
+import { ContentType, NoteType, ReferenceType } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const noteRouter = createTRPCRouter({
   create: protectedProcedure
     .input(
       z.object({
-        workspaceId: z.string(),
+        spaceId: z.string(),
         title: z.string().min(1).max(200),
         content: z.string(),
         contentType: z
-          .enum([
-            ContentType.MARKDOWN,
-            ContentType.RICH_TEXT,
-            ContentType.CODE,
-            ContentType.CANVAS,
-          ])
+          .enum([ContentType.MARKDOWN, ContentType.RICH_TEXT])
           .default(ContentType.MARKDOWN),
-        categoryId: z.string().optional(),
+        noteType: z
+          .enum([
+            NoteType.NOTE,
+            NoteType.ARTICLE,
+            NoteType.QUOTE,
+            NoteType.THOUGHT,
+            NoteType.QUESTION,
+          ])
+          .default(NoteType.NOTE),
         tagIds: z.array(z.string()).optional(),
         sourceUrl: z.string().url().optional(),
+        references: z
+          .array(
+            z.object({
+              toNoteId: z.string(),
+              referenceType: z.enum([
+                ReferenceType.RELATED,
+                ReferenceType.SUPPORTS,
+                ReferenceType.CONTRADICTS,
+                ReferenceType.QUESTIONS,
+              ]),
+              description: z.string().optional(),
+            }),
+          )
+          .optional(),
+        enableAI: z.boolean().default(true),
+        enableMemory: z.boolean().default(false),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify user has access to workspace
-      const workspace = await ctx.db.workspace.findFirst({
+      // Verify user has access to knowledge space
+      const space = await ctx.db.space.findFirst({
         where: {
-          id: input.workspaceId,
-          members: {
-            some: {
-              userId: ctx.auth.userId,
-            },
-          },
+          id: input.spaceId,
+          ownerId: ctx.auth.userId,
+        },
+        include: {
+          settings: true,
         },
       });
 
-      if (!workspace) {
-        throw new Error("Not authorized to create notes in this workspace");
+      if (!space) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Not authorized to create notes in this knowledge space",
+        });
       }
 
-      return ctx.db.note.create({
+      // Create the note with all its relationships
+      const note = await ctx.db.note.create({
         data: {
           title: input.title,
           content: input.content,
           contentType: input.contentType,
-          workspace: { connect: { id: input.workspaceId } },
-          author: { connect: { id: ctx.auth.userId } },
-          category: input.categoryId
-            ? { connect: { id: input.categoryId } }
-            : undefined,
+          noteType: input.noteType,
+          space: { connect: { id: input.spaceId } },
+          author: { connect: { clerkId: ctx.auth.userId } },
           tags: input.tagIds
             ? {
                 create: input.tagIds.map((tagId) => ({
@@ -58,42 +78,84 @@ export const noteRouter = createTRPCRouter({
               }
             : undefined,
           sourceUrl: input.sourceUrl,
+          // Create references if provided
+          references: input.references
+            ? {
+                create: input.references.map((ref) => ({
+                  toNote: { connect: { id: ref.toNoteId } },
+                  referenceType: ref.referenceType,
+                  description: ref.description,
+                })),
+              }
+            : undefined,
+          // Create memory metadata if enabled
+          memoryMetadata: input.enableMemory
+            ? {
+                create: {
+                  isActive: true,
+                },
+              }
+            : undefined,
         },
         include: {
-          category: true,
           tags: {
             include: {
               tag: true,
             },
           },
+          references: {
+            include: {
+              toNote: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+          memoryMetadata: true,
         },
       });
+
+      // Process with AI if enabled
+      if (input.enableAI && space.settings?.enableAIProcessing) {
+        await ctx.db.aINoteMetadata.create({
+          data: {
+            noteId: note.id,
+            // AI processing will be handled by a separate background job
+            // This just creates the initial record
+          },
+        });
+      }
+
+      return note;
     }),
 
-  getAll: protectedProcedure
+  getAllBySpace: protectedProcedure
     .input(
       z.object({
-        workspaceId: z.string(),
-        categoryId: z.string().optional(),
+        spaceId: z.string(),
         tagIds: z.array(z.string()).optional(),
-        status: z
-          .enum([NoteStatus.DRAFT, NoteStatus.PUBLISHED, NoteStatus.REVIEW])
+        noteType: z
+          .enum([
+            NoteType.NOTE,
+            NoteType.ARTICLE,
+            NoteType.QUOTE,
+            NoteType.THOUGHT,
+            NoteType.QUESTION,
+          ])
           .optional(),
         search: z.string().optional(),
+        includeArchived: z.boolean().default(false),
       }),
     )
     .query(async ({ ctx, input }) => {
       return ctx.db.note.findMany({
         where: {
-          workspaceId: input.workspaceId,
-          workspace: {
-            members: {
-              some: {
-                userId: ctx.auth.userId,
-              },
-            },
+          spaceId: input.spaceId,
+          space: {
+            ownerId: ctx.auth.userId,
           },
-          categoryId: input.categoryId,
           tags: input.tagIds
             ? {
                 some: {
@@ -103,7 +165,8 @@ export const noteRouter = createTRPCRouter({
                 },
               }
             : undefined,
-          status: input.status,
+          noteType: input.noteType,
+          isArchived: input.includeArchived ? undefined : false,
           OR: input.search
             ? [
                 { title: { contains: input.search, mode: "insensitive" } },
@@ -114,19 +177,27 @@ export const noteRouter = createTRPCRouter({
         include: {
           author: {
             select: {
-              id: true,
               name: true,
-              email: true,
               imageUrl: true,
             },
           },
-          category: true,
           tags: {
             include: {
               tag: true,
             },
           },
           aiMetadata: true,
+          memoryMetadata: true,
+          references: {
+            include: {
+              toNote: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
         },
         orderBy: {
           updatedAt: "desc",
@@ -137,35 +208,60 @@ export const noteRouter = createTRPCRouter({
   getById: protectedProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
-      return ctx.db.note.findFirst({
+      const note = await ctx.db.note.findFirst({
         where: {
           id: input.id,
-          workspace: {
-            members: {
-              some: {
-                userId: ctx.auth.userId,
-              },
-            },
+          space: {
+            ownerId: ctx.auth.userId,
           },
         },
         include: {
           author: {
             select: {
-              id: true,
               name: true,
-              email: true,
               imageUrl: true,
             },
           },
-          category: true,
           tags: {
             include: {
               tag: true,
             },
           },
           aiMetadata: true,
+          memoryMetadata: true,
+          references: {
+            include: {
+              toNote: {
+                select: {
+                  id: true,
+                  title: true,
+                  noteType: true,
+                },
+              },
+            },
+          },
+          referencedBy: {
+            include: {
+              fromNote: {
+                select: {
+                  id: true,
+                  title: true,
+                  noteType: true,
+                },
+              },
+            },
+          },
         },
       });
+
+      if (!note) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Note not found",
+        });
+      }
+
+      return note;
     }),
 
   update: protectedProcedure
@@ -174,41 +270,53 @@ export const noteRouter = createTRPCRouter({
         id: z.string(),
         title: z.string().min(1).max(200).optional(),
         content: z.string().optional(),
-        categoryId: z.string().optional().nullable(),
-        tagIds: z.array(z.string()).optional(),
-        status: z
-          .enum([NoteStatus.DRAFT, NoteStatus.PUBLISHED, NoteStatus.REVIEW])
+        noteType: z
+          .enum([
+            NoteType.NOTE,
+            NoteType.ARTICLE,
+            NoteType.QUOTE,
+            NoteType.THOUGHT,
+            NoteType.QUESTION,
+          ])
           .optional(),
+        tagIds: z.array(z.string()).optional(),
         sourceUrl: z.string().url().optional().nullable(),
+        references: z
+          .array(
+            z.object({
+              toNoteId: z.string(),
+              referenceType: z.enum([
+                ReferenceType.RELATED,
+                ReferenceType.SUPPORTS,
+                ReferenceType.CONTRADICTS,
+                ReferenceType.QUESTIONS,
+              ]),
+              description: z.string().optional(),
+            }),
+          )
+          .optional(),
+        isArchived: z.boolean().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       const note = await ctx.db.note.findFirst({
         where: {
           id: input.id,
-          OR: [
-            { authorId: ctx.auth.userId },
-            {
-              workspace: {
-                members: {
-                  some: {
-                    userId: ctx.auth.userId,
-                    role: {
-                      in: [MemberRole.OWNER, MemberRole.ADMIN],
-                    },
-                  },
-                },
-              },
-            },
-          ],
+          space: {
+            ownerId: ctx.auth.userId,
+          },
         },
         include: {
           tags: true,
+          references: true,
         },
       });
 
       if (!note) {
-        throw new Error("Not authorized to update this note");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Note not found",
+        });
       }
 
       // Remove existing tags if new ones are provided
@@ -220,17 +328,21 @@ export const noteRouter = createTRPCRouter({
         });
       }
 
+      // Remove existing references if new ones are provided
+      if (input.references) {
+        await ctx.db.noteReference.deleteMany({
+          where: {
+            fromNoteId: input.id,
+          },
+        });
+      }
+
       return ctx.db.note.update({
         where: { id: input.id },
         data: {
           title: input.title,
           content: input.content,
-          category:
-            input.categoryId === null
-              ? { disconnect: true }
-              : input.categoryId
-                ? { connect: { id: input.categoryId } }
-                : undefined,
+          noteType: input.noteType,
           tags: input.tagIds
             ? {
                 create: input.tagIds.map((tagId) => ({
@@ -238,17 +350,36 @@ export const noteRouter = createTRPCRouter({
                 })),
               }
             : undefined,
-          status: input.status,
+          references: input.references
+            ? {
+                create: input.references.map((ref) => ({
+                  toNote: { connect: { id: ref.toNoteId } },
+                  referenceType: ref.referenceType,
+                  description: ref.description,
+                })),
+              }
+            : undefined,
           sourceUrl: input.sourceUrl,
-          version: { increment: 1 },
+          isArchived: input.isArchived,
         },
         include: {
-          category: true,
           tags: {
             include: {
               tag: true,
             },
           },
+          references: {
+            include: {
+              toNote: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
+            },
+          },
+          aiMetadata: true,
+          memoryMetadata: true,
         },
       });
     }),
@@ -259,66 +390,21 @@ export const noteRouter = createTRPCRouter({
       const note = await ctx.db.note.findFirst({
         where: {
           id: input.id,
-          OR: [
-            { authorId: ctx.auth.userId },
-            {
-              workspace: {
-                members: {
-                  some: {
-                    userId: ctx.auth.userId,
-                    role: {
-                      in: [MemberRole.OWNER, MemberRole.ADMIN],
-                    },
-                  },
-                },
-              },
-            },
-          ],
+          space: {
+            ownerId: ctx.auth.userId,
+          },
         },
       });
 
       if (!note) {
-        throw new Error("Not authorized to delete this note");
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Note not found",
+        });
       }
 
       return ctx.db.note.delete({
         where: { id: input.id },
-      });
-    }),
-
-  archive: protectedProcedure
-    .input(z.object({ id: z.string(), archive: z.boolean() }))
-    .mutation(async ({ ctx, input }) => {
-      const note = await ctx.db.note.findFirst({
-        where: {
-          id: input.id,
-          OR: [
-            { authorId: ctx.auth.userId },
-            {
-              workspace: {
-                members: {
-                  some: {
-                    userId: ctx.auth.userId,
-                    role: {
-                      in: [MemberRole.OWNER, MemberRole.ADMIN],
-                    },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      });
-
-      if (!note) {
-        throw new Error("Not authorized to archive this note");
-      }
-
-      return ctx.db.note.update({
-        where: { id: input.id },
-        data: {
-          isArchived: input.archive,
-        },
       });
     }),
 });

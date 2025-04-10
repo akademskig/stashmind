@@ -2,7 +2,7 @@
 
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { Home, FileText, Users } from "lucide-react";
+import { Home, Users, EarthIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
@@ -23,9 +23,9 @@ const navItems: NavItem[] = [
     label: "Home",
   },
   {
-    href: "/dashboard/workspaces",
-    icon: FileText,
-    label: "Workspaces",
+    href: "/dashboard/spaces",
+    icon: EarthIcon,
+    label: "Spaces",
   },
   {
     href: "/dashboard/teams",

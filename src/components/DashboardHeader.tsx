@@ -16,10 +16,10 @@ export function DashboardHeader() {
       {/* Navigation Links */}
       <div className="ml-8 hidden items-center gap-6 md:flex">
         <Link
-          href="/dashboard/workspaces"
+          href="/dashboard/spaces"
           className="flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
         >
-          <span>Workspaces</span>
+          <span>Spaces</span>
         </Link>
 
         <Link

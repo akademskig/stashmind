@@ -15,84 +15,66 @@ datasource db {
 }
 
 model ClerkUser {
-  id            String    @id @default(cuid())
-  clerkId       String    @unique
-  email         String    @unique
-  name          String?
-  imageUrl      String?
-  workspaces    WorkspaceMember[]
-  ownedWorkspaces Workspace[]
-  notes         Note[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  clerkId           String    @unique
+  email             String    @unique
+  name              String?
+  imageUrl          String?
+  spaces   Space[]
+  notes             Note[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 }
 
-model Workspace {
+model Space {
   id          String    @id @default(cuid())
   name        String
   description String?
-  type        WorkspaceType
+  purpose     SpacePurpose @default(GENERAL)
   owner       ClerkUser @relation(fields: [ownerId], references: [clerkId])
   ownerId     String
-  members     WorkspaceMember[]
   notes       Note[]
   tags        Tag[]
   categories  Category[]
+  settings    SpaceSettings?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([ownerId])
 }
 
-enum WorkspaceType {
-  PERSONAL
-  TEAM
-}
-
-model WorkspaceMember {
-  id          String    @id @default(cuid())
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String
-  user        ClerkUser @relation(fields: [userId], references: [clerkId], onDelete: Cascade)
-  userId      String
-  role        MemberRole
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@unique([workspaceId, userId])
-  @@index([userId])
-  @@index([workspaceId])
-}
-
-enum MemberRole {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
+enum SpacePurpose {
+  GENERAL      // For general note-taking
+  LEARNING     // For courses, tutorials, learning projects
+  READING      // For book notes, articles, papers
+  RESEARCH     // For research projects and deep dives
+  JOURNAL      // For personal reflections and thoughts
 }
 
 model Note {
-  id              String    @id @default(cuid())
-  title           String
-  content         String    @db.Text
-  contentType     ContentType @default(MARKDOWN)
-  summary         String?   @db.Text
-  workspace       Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId     String
-  author          ClerkUser @relation(fields: [authorId], references: [clerkId])
-  authorId        String
-  tags            TagsOnNotes[]
-  category        Category? @relation(fields: [categoryId], references: [id])
-  categoryId      String?
-  aiMetadata      AINoteMetadata?
-  sourceUrl       String?
-  status          NoteStatus @default(DRAFT)
-  isArchived      Boolean   @default(false)
-  version         Int       @default(1)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  title             String
+  content           String    @db.Text
+  contentType       ContentType @default(MARKDOWN)
+  noteType          NoteType  @default(NOTE)
+  summary           String?   @db.Text
+  space    Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId  String
+  author            ClerkUser @relation(fields: [authorId], references: [clerkId])
+  authorId          String
+  tags              TagsOnNotes[]
+  category          Category? @relation(fields: [categoryId], references: [id])
+  categoryId        String?
+  aiMetadata        AINoteMetadata?
+  memoryMetadata    MemoryMetadata?
+  sourceUrl         String?
+  isArchived        Boolean   @default(false)
+  references        NoteReference[] @relation("ReferencingNotes")
+  referencedBy      NoteReference[] @relation("ReferencedNotes")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  @@index([workspaceId])
+  @@index([spaceId])
   @@index([authorId])
   @@index([categoryId])
 }
@@ -100,22 +82,44 @@ model Note {
 enum ContentType {
   MARKDOWN
   RICH_TEXT
-  CODE
-  CANVAS
 }
 
-enum NoteStatus {
-  DRAFT
-  PUBLISHED
-  REVIEW
+enum NoteType {
+  NOTE          // General notes
+  ARTICLE       // Article summaries and highlights
+  QUOTE         // Interesting quotes and citations
+  THOUGHT       // Personal thoughts and insights
+  QUESTION      // Questions and uncertainties
+}
+
+model NoteReference {
+  id              String    @id @default(cuid())
+  fromNote        Note      @relation("ReferencingNotes", fields: [fromNoteId], references: [id], onDelete: Cascade)
+  fromNoteId      String
+  toNote          Note      @relation("ReferencedNotes", fields: [toNoteId], references: [id], onDelete: Cascade)
+  toNoteId        String
+  referenceType   ReferenceType @default(RELATED)
+  description     String?
+  createdAt       DateTime  @default(now())
+
+  @@unique([fromNoteId, toNoteId])
+  @@index([fromNoteId])
+  @@index([toNoteId])
+}
+
+enum ReferenceType {
+  RELATED        // General relationship
+  SUPPORTS       // Supports or expands on the idea
+  CONTRADICTS    // Presents opposing viewpoint
+  QUESTIONS      // Raises questions about the idea
 }
 
 model Category {
   id          String    @id @default(cuid())
   name        String
   description String?
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String
+  space Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId String
   notes       Note[]
   parentId    String?
   parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id])
@@ -123,23 +127,23 @@ model Category {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  @@unique([workspaceId, name])
-  @@index([workspaceId])
+  @@unique([spaceId, name])
+  @@index([spaceId])
   @@index([parentId])
 }
 
 model Tag {
-  id          String    @id @default(cuid())
-  name        String
-  color       String?
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  workspaceId String
-  notes       TagsOnNotes[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id                String    @id @default(cuid())
+  name              String
+  color             String?
+  space    Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId  String
+  notes             TagsOnNotes[]
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
-  @@unique([workspaceId, name])
-  @@index([workspaceId])
+  @@unique([spaceId, name])
+  @@index([spaceId])
 }
 
 model TagsOnNotes {
@@ -154,6 +158,23 @@ model TagsOnNotes {
   @@index([tagId])
 }
 
+model MemoryMetadata {
+  id              String    @id @default(cuid())
+  note            Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  noteId          String    @unique
+  lastReviewed    DateTime?
+  nextReviewDate  DateTime?
+  reviewCount     Int       @default(0)
+  difficulty      Int       @default(3) // 1-5 scale
+  interval        Int       @default(1) // days
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([noteId])
+  @@index([nextReviewDate])
+}
+
 model AINoteMetadata {
   id              String    @id @default(cuid())
   note            Note      @relation(fields: [noteId], references: [id], onDelete: Cascade)
@@ -161,10 +182,23 @@ model AINoteMetadata {
   summary         String?   @db.Text
   keyPoints       String[]
   suggestedTags   String[]
-  sentiment       Float?
   topics          String[]
+  questions       String[]  // AI-generated review questions
+  connections     Json?     // Suggested note connections
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
 
   @@index([noteId])
+}
+
+model SpaceSettings {
+  id                    String    @id @default(cuid())
+  space        Space @relation(fields: [spaceId], references: [id], onDelete: Cascade)
+  spaceId      String    @unique
+  defaultNoteType       NoteType  @default(NOTE)
+  enableSpacedRepetition Boolean  @default(false)
+  enableAIProcessing    Boolean   @default(true)
+  reviewSchedule        Json?     // Flexible schedule configuration
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }

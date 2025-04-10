@@ -1,5 +1,13 @@
 import Link from "next/link";
 import { Header, type HeaderProps } from "./Header";
+import {
+  Brain,
+  BookOpen,
+  Sparkles,
+  Chrome,
+  Network,
+  Clock,
+} from "lucide-react";
 
 const links: HeaderProps["links"] = [
   { href: "/features", label: "Features" },
@@ -12,188 +20,121 @@ export function LandingPage() {
   return (
     <>
       <Header links={links} />
-      <main className="hero-background relative flex h-screen flex-col">
-        {/* Content wrapper */}
+      <main className="hero-background relative flex min-h-screen flex-col">
         <div className="relative z-10 flex flex-1 flex-col">
           {/* Hero Section */}
-          <section className="px-4 pt-24">
-            <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
-              <h1 className="mb-6 text-5xl leading-tight font-bold text-white md:text-6xl">
-                Welcome to StashMind
+          <section className="px-4 pt-16">
+            <div className="mx-auto mt-12 flex max-w-4xl flex-col items-center text-center">
+              <h1 className="mb-4 text-4xl leading-tight font-bold text-white md:text-5xl">
+                Your Personal Knowledge Sanctuary
               </h1>
-              <p className="mb-8 text-xl text-gray-200">
-                Your intelligent knowledge management system that helps you
-                organize, discover, and share information effortlessly.
+              <p className="mb-6 text-lg text-gray-200">
+                Transform how you learn and retain knowledge. Build your second
+                brain with smart tools for capturing, connecting, and truly
+                remembering what matters to you.
               </p>
-              <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
+              <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
                 <Link
                   href="/signup"
-                  className="rounded-lg bg-blue-800/90 px-8 py-3 font-semibold text-white transition hover:bg-blue-700"
+                  className="rounded-lg bg-blue-800/90 px-6 py-2 font-semibold text-white transition hover:bg-blue-700"
                 >
-                  Get Started
+                  Start Free Trial
                 </Link>
                 <Link
-                  href="/about"
-                  className="bg-opacity-50 rounded-lg bg-violet-900/90 px-8 py-3 font-semibold text-white transition hover:bg-violet-800"
+                  href="/pricing"
+                  className="bg-opacity-50 rounded-lg bg-violet-900/90 px-6 py-2 font-semibold text-white transition hover:bg-violet-800"
                 >
-                  Learn More
+                  View Pricing
                 </Link>
               </div>
             </div>
           </section>
 
           {/* Features Section */}
-          <section className="mt-12 mb-12 flex-1 px-4">
+          <section className="mt-8 mb-8 flex flex-1 items-center px-4">
             <div className="mx-auto max-w-6xl">
-              <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                {/* Personal Knowledge Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600/20">
-                    <svg
-                      className="h-6 w-6 text-blue-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"
-                      />
-                    </svg>
+              <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                {/* Memory Builder Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600/20">
+                    <Brain className="h-5 w-5 text-blue-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
-                    Personal Mind
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
+                    Memory Builder
                   </h3>
-                  <p className="text-blue-200">
-                    Your private space to capture, nurture, and grow your
-                    knowledge.
+                  <p className="text-sm text-blue-200">
+                    Never forget what you learn with smart spaced repetition and
+                    active recall exercises tailored to your learning style.
                   </p>
                 </div>
 
-                {/* Team Space Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-purple-600/20">
-                    <svg
-                      className="h-6 w-6 text-purple-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                      />
-                    </svg>
+                {/* Zettelkasten Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-purple-600/20">
+                    <Network className="h-5 w-5 text-purple-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
-                    Team Mind
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
+                    Connected Thinking
                   </h3>
-                  <p className="text-blue-200">
-                    Collaborate and build collective wisdom with your team.
+                  <p className="text-sm text-blue-200">
+                    Build a network of knowledge with Zettelkasten-style note
+                    linking. Watch insights emerge as you connect ideas.
                   </p>
                 </div>
 
-                {/* AI Features Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-green-600/20">
-                    <svg
-                      className="h-6 w-6 text-green-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 10V3L4 14h7v7l9-11h-7z"
-                      />
-                    </svg>
+                {/* AI Assistant Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-green-600/20">
+                    <Sparkles className="h-5 w-5 text-green-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
-                    AI Power
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
+                    AI-Powered Insights
                   </h3>
-                  <p className="text-blue-200">
-                    Smart summaries, connections, and memory boosters.
+                  <p className="text-sm text-blue-200">
+                    Let AI help you summarize content, discover connections, and
+                    generate review questions to deepen understanding.
                   </p>
                 </div>
 
-                {/* Capture Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-red-600/20">
-                    <svg
-                      className="h-6 w-6 text-red-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
+                {/* Chrome Extension Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-red-600/20">
+                    <Chrome className="h-5 w-5 text-red-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
                     Quick Capture
                   </h3>
-                  <p className="text-blue-200">
-                    Save content from anywhere, in any format.
+                  <p className="text-sm text-blue-200">
+                    Save articles, highlights, and insights instantly with our
+                    Chrome extension. Never lose valuable knowledge again.
                   </p>
                 </div>
 
-                {/* Organization Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-600/20">
-                    <svg
-                      className="h-6 w-6 text-yellow-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                      />
-                    </svg>
+                {/* Knowledge Spaces Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-yellow-600/20">
+                    <BookOpen className="h-5 w-5 text-yellow-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
-                    Smart Organization
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
+                    Knowledge Spaces
                   </h3>
-                  <p className="text-blue-200">
-                    Auto-tagging and self-organizing knowledge.
+                  <p className="text-sm text-blue-200">
+                    Organize your learning journey with dedicated spaces for
+                    different subjects, projects, and reading lists.
                   </p>
                 </div>
 
-                {/* Integration Card */}
-                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-6 shadow-lg backdrop-blur-lg">
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-600/20">
-                    <svg
-                      className="h-6 w-6 text-indigo-400"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                      />
-                    </svg>
+                {/* Review System Card */}
+                <div className="glass-card rounded-xl border border-white/20 bg-white/10 p-4 shadow-lg backdrop-blur-lg">
+                  <div className="mb-3 flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600/20">
+                    <Clock className="h-5 w-5 text-indigo-400" />
                   </div>
-                  <h3 className="mb-2 text-xl font-semibold text-white">
-                    Seamless Integration
+                  <h3 className="mb-1.5 text-lg font-semibold text-white">
+                    Active Learning
                   </h3>
-                  <p className="text-blue-200">
-                    Works with your favorite tools and apps.
+                  <p className="text-sm text-blue-200">
+                    Turn passive notes into active knowledge with scheduled
+                    reviews, reflection prompts, and learning exercises.
                   </p>
                 </div>
               </div>
@@ -201,14 +142,14 @@ export function LandingPage() {
           </section>
 
           {/* CTA Section */}
-          <section className="mt-auto bg-slate-900 py-8">
+          <section className="mt-auto bg-slate-900 py-6">
             <div className="mx-auto max-w-4xl px-4 text-center">
-              <h2 className="mb-4 text-2xl font-bold text-white md:text-3xl">
-                Ready to Transform Your Knowledge Management?
+              <h2 className="mb-2 text-xl font-bold text-white md:text-2xl">
+                Start Building Your Second Brain
               </h2>
               <Link
                 href="/signup"
-                className="glow-button inline-block rounded-lg bg-blue-800/90 px-8 py-3 font-semibold text-white transition hover:bg-blue-600"
+                className="glow-button inline-block rounded-lg bg-blue-800/90 px-6 py-2 font-semibold text-white transition hover:bg-blue-600"
               >
                 Start Your Free Trial
               </Link>

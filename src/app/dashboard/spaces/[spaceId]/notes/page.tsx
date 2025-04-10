@@ -13,14 +13,14 @@ import { Plus } from "lucide-react";
 export default function WorkspaceNotesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const params = useParams();
-  const id = params.workspaceId as string;
+  const id = params.spaceId as string;
 
-  const { data: workspace } = api.workspace.getById.useQuery({ id });
-  const { data: notes } = api.note.getAllByWorkspace.useQuery({
-    workspaceId: id,
+  const { data: space } = api.space.getById.useQuery({ id });
+  const { data: notes } = api.note.getAllBySpace.useQuery({
+    spaceId: id,
   });
 
-  if (!workspace) {
+  if (!space) {
     return <Loader fullPage size="lg" />;
   }
 
@@ -66,7 +66,7 @@ export default function WorkspaceNotesPage() {
         onClose={() => setIsModalOpen(false)}
         title="Create Note"
       >
-        <NoteForm onSuccess={() => setIsModalOpen(false)} workspaceId={id} />
+        <NoteForm onSuccess={() => setIsModalOpen(false)} spaceId={id} />
       </Modal>
     </div>
   );
