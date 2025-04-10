@@ -4,6 +4,8 @@ import { useState } from "react";
 import { api } from "~/trpc/react";
 import { Button } from "./ui/button";
 import { Loader } from "./ui/loader";
+import MDEditor from "@uiw/react-md-editor";
+import { Card } from "./ui/card";
 
 interface NoteFormProps {
   spaceId: string;
@@ -93,14 +95,23 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
         >
           Content
         </label>
-        <textarea
-          id="content"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          className="w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-white placeholder-slate-400 transition-all duration-200 focus:border-cyan-500 focus:outline-none"
-          placeholder="Write your note here..."
-          rows={8}
-        />
+        <Card className="min-h-[300px] overflow-hidden border-slate-700 bg-slate-800 p-0 [&_[data-color-mode='light']]:!bg-slate-800">
+          <MDEditor
+            value={content}
+            onChange={(val) => setContent(val ?? "")}
+            preview="live"
+            height={300}
+            hideToolbar={false}
+            enableScroll={true}
+            textareaProps={{
+              placeholder:
+                "Write your note here...\n\nSupports Markdown formatting",
+            }}
+            previewOptions={{
+              className: "prose prose-invert max-w-none px-4",
+            }}
+          />
+        </Card>
       </div>
 
       {error && (

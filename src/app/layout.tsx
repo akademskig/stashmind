@@ -1,6 +1,9 @@
 import { ClerkProvider } from "@clerk/nextjs";
 import { TRPCReactProvider } from "~/trpc/provider";
-import "./globals.css";
+import "~/styles/globals.css";
+import "~/styles/markdown.css";
+import "@uiw/react-md-editor/markdown-editor.css";
+import "@uiw/react-markdown-preview/markdown.css";
 import { Inter } from "next/font/google";
 
 const inter = Inter({ subsets: ["latin"] });
