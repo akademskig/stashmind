@@ -7,6 +7,7 @@ import { Loader } from "./ui/loader";
 import MDEditor from "@uiw/react-md-editor";
 import { Card } from "./ui/card";
 import { toast } from "sonner";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 interface NoteFormProps {
   spaceId: string;
@@ -32,6 +33,7 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
   const [content, setContent] = useState(initialData?.content ?? "");
   const [error, setError] = useState("");
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const utils = api.useUtils();
 
   const draftKey = `${DRAFT_KEY_PREFIX}${spaceId}${initialData?.id ?? "new"}`;
@@ -150,19 +152,32 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
         />
       </div>
 
-      <div className="animate-fade-in [animation-delay:100ms]">
-        <label
-          htmlFor="content"
-          className="mb-1 block text-sm font-medium text-white"
+      <div
+        className={`animate-fade-in [animation-delay:100ms] ${isFullscreen ? "fixed inset-0 z-50 m-0 bg-slate-950 p-4" : ""}`}
+      >
+        <div className="mb-1 flex items-center justify-end">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsFullscreen(!isFullscreen)}
+            className="text-slate-400 hover:text-white"
+          >
+            {isFullscreen ? (
+              <Minimize2 className="h-4 w-4" />
+            ) : (
+              <Maximize2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+        <Card
+          className={`overflow-hidden border-slate-700 bg-slate-800 p-0 [&_[data-color-mode='light']]:!bg-slate-800 ${isFullscreen ? "h-[calc(100vh-6rem)]" : "min-h-[500px]"}`}
         >
-          Content
-        </label>
-        <Card className="min-h-[500px] overflow-hidden border-slate-700 bg-slate-800 p-0 [&_[data-color-mode='light']]:!bg-slate-800">
           <MDEditor
             value={content}
             onChange={(val) => setContent(val ?? "")}
             preview="live"
-            height={500}
+            height={isFullscreen ? "calc(100vh - 6rem)" : 500}
             hideToolbar={false}
             enableScroll={true}
             textareaProps={{
@@ -182,7 +197,9 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
         </div>
       )}
 
-      <div className="animate-fade-in flex items-center justify-between pt-2 [animation-delay:200ms]">
+      <div
+        className={`animate-fade-in flex items-center justify-between pt-2 [animation-delay:200ms] ${isFullscreen ? "fixed inset-x-0 bottom-0 border-t border-slate-800 bg-slate-900 p-4" : ""}`}
+      >
         <div className="text-sm text-slate-400">
           {lastSaved && (
             <span>Last saved {lastSaved.toLocaleTimeString()}</span>

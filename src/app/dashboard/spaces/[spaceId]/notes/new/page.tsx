@@ -26,7 +26,7 @@ export default function NewNotePage() {
             className="mb-2 inline-flex items-center text-sm text-slate-400 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Notes /   {space?.name && `in ${space.name}`}
+            Back to Notes / {space?.name && `in ${space.name}`}
           </Link>
         </div>
       </div>
