@@ -12,7 +12,7 @@ export const authRouter = createTRPCRouter({
           clerkId: ctx.auth.userId,
           email: ctx.auth.email!,
           name: ctx.auth.name,
-          image: ctx.auth.image,
+          imageUrl: ctx.auth.image,
         },
       });
     }
