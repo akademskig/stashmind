@@ -157,12 +157,12 @@ export function NoteForm({ spaceId, onSuccess, initialData }: NoteFormProps) {
         >
           Content
         </label>
-        <Card className="min-h-[300px] overflow-hidden border-slate-700 bg-slate-800 p-0 [&_[data-color-mode='light']]:!bg-slate-800">
+        <Card className="min-h-[500px] overflow-hidden border-slate-700 bg-slate-800 p-0 [&_[data-color-mode='light']]:!bg-slate-800">
           <MDEditor
             value={content}
             onChange={(val) => setContent(val ?? "")}
             preview="live"
-            height={300}
+            height={500}
             hideToolbar={false}
             enableScroll={true}
             textareaProps={{

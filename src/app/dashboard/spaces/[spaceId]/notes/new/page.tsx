@@ -23,15 +23,11 @@ export default function NewNotePage() {
         <div>
           <Link
             href={`/dashboard/spaces/${spaceId}/notes`}
-            className="mb-4 inline-flex items-center text-sm text-slate-400 hover:text-white"
+            className="mb-2 inline-flex items-center text-sm text-slate-400 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Notes
+            Back to Notes /   {space?.name && `in ${space.name}`}
           </Link>
-          <h1 className="text-2xl font-semibold text-white">Create New Note</h1>
-          <p className="mt-1 text-sm text-slate-400">
-            {space?.name && `in ${space.name}`}
-          </p>
         </div>
       </div>
 
